@@ -9,7 +9,7 @@ import (
 
 var (
 	h                              bool
-	arg_paths, mode                    string
+	arg_paths, mode,arg_cluster   string
 	num_file_limit, num_byte_limit int
 )
 
@@ -20,15 +20,16 @@ Options:
 `)
 	flag.PrintDefaults()
 	fmt.Fprintf(os.Stderr, `Example:
-DirMonitor -m save -p /mnt/cephfs/algor-api/user/*/* /mnt/cephfs/algor-api/dataset/user/*/* /mnt/cephfs/algor-api/dataset/public/* -NF 10000 -NB 1048576
+./DirMonitor -m save -p /mnt/cephfs-ht-test2/algor-api/user/*/*,/mnt/cephfs-ht-test2/algor-api/dataset/user/*/*,/mnt/cephfs-ht-test2/algor-api/dataset/public/* -NF 10000 -NB 1048576
 `)
 
 }
 
 func init() {
 	flag.BoolVar(&h, "h", false, "show help")
-	flag.StringVar(&mode, "m", "", "运行模式，save:将统计结果把存在本地，post:将统计结果post到平台,exporter:用以Prometheus抓取目录信息。")
+	flag.StringVar(&mode, "m", "exporter", "运行模式(默认为exporter)，save:将统计结果把存在本地，post:将统计结果post到平台,exporter:用以Prometheus抓取目录信息。")
 	flag.StringVar(&arg_paths, "p", "", "列举操作的目录，可使用通配符表示，多个以逗号隔开。")
+	flag.StringVar(&arg_cluster, "c", "default", "启动的集群名称。")
 	flag.IntVar(&num_file_limit, "NF", 0, "设置的目录下文件数上限。")
 	flag.IntVar(&num_byte_limit, "NB", 0, "设置的整个目录大小上限（单位：Byte）。")
 	flag.Usage = usage
@@ -42,13 +43,20 @@ func init() {
 	log.SetOutput(os.Stdout)
 	log.SetLevel(log.DebugLevel)
 
+
 }
 func main() {
+	log.Info("Starting DirMonitor....")
 	flag.Parse()
 	if h {
 		flag.Usage()
 		return
 	}
+	//arg_paths = "/Users/wangyanlei3/*/*"
+	//mode = "exporter"
+	//num_file_limit = 10000
+	//num_byte_limit = 1099222
+	//DirInfoExporter()
 	if mode == "save" {
 		SaveMatchDir()
 	} else if mode == "post" {
